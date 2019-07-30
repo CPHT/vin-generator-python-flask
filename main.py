@@ -4,41 +4,20 @@ from libvin.decoding import Vin
 from libvin.static import WMI_MAP
 import random
 import requests
-
-#vin = '1GNFK13087R286019'
-#vin = '1M8GDM9AAKP042788'
-
-#v = Vin(vin)
-#print (v.region)
-#print (v.country)
-#print (v.make)
-#print (v.manufacturer)
-#print (v.vds)
-#print (v.vis)
-#print (v.vsn)
-#print (v.wmi)
-#print (v.year)
+from prefixes import vin_prefixes
 
 
 def get_random_vin():
-    #wmi = random.choice(list(WMI_MAP))
-    wmi = '5J6'
-
     base_vin_map = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 
-    # can not use I, O, Q, U, Z
-    year_model_map = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'V', 'W', 'X', 'Y']
-
     vds_4_through_8 = ''.join([random.choice(base_vin_map) for n in range(5)])
-    #TODO this is 0-9 if in NA, else it's X
-    # temp
     vds_9 = 'A'
 
-    vis_10 = random.choice(year_model_map)
-    vis_11 = random.choice(base_vin_map)
-    vis_12_through_17 = ''.join([random.choice(base_vin_map) for n in range(6)])
+    first_8 = random.choice(list(vin_prefixes))
+    first_10 = first_8 + 'A' + vin_prefixes[first_8]
+    last_7 = ''.join([random.choice(base_vin_map) for n in range(7)])
 
-    vin = wmi + vds_4_through_8 + vds_9 + vis_10 + vis_11 + vis_12_through_17
+    vin = first_10 + last_7
     vin = vin[:8] + get_check_digit(vin) + vin[9:]
     return vin
 
