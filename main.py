@@ -4,15 +4,19 @@ from libvin.decoding import Vin
 from libvin.static import WMI_MAP
 import random
 import requests
-from prefixes import vin_prefixes
+from include import *
 
+#print (v.region)
+#print (v.country)
+#print (v.make)
+#print (v.manufacturer)
+#print (v.vds)
+#print (v.vis)
+#print (v.vsn)
+#print (v.wmi)
+#print (v.year)
 
 def get_random_vin():
-    base_vin_map = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-
-    vds_4_through_8 = ''.join([random.choice(base_vin_map) for n in range(5)])
-    vds_9 = 'A'
-
     first_8 = random.choice(list(vin_prefixes))
     first_10 = first_8 + 'A' + vin_prefixes[first_8]
     last_7 = ''.join([random.choice(base_vin_map) for n in range(7)])
@@ -23,10 +27,6 @@ def get_random_vin():
 
 
 def get_check_digit(vin):
-    values = {'A': 1, 'B': '2', 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7, 'H': 8, 'J': 1, 'K': 2, 'L': 3, 'M': 4, 'N': 5, 'P': 7, 'R': 9, 'S': 2, 'T': 3, 'U': 4, 'V': 5, 'W': 6, 'X': 7, 'Y': 8, 'Z': 9}
-
-    weights = [8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2]
-
     ii = 0
     product_sum = 0
     for c in vin:
@@ -34,8 +34,8 @@ def get_check_digit(vin):
             if c.isdigit():
                 value = int(c)
             else:
-                value = int(values[c])
-            weight = weights[ii]
+                value = int(check_digit_values[c])
+            weight = check_digit_weights[ii]
             product = value * weight
             product_sum += product
             ii += 1
@@ -46,11 +46,24 @@ def get_check_digit(vin):
     else:
         return str(remainder)
 
-while True:
-    v = Vin(get_random_vin())
-    if (v.is_valid):
-        print ("VALID", v.vin)
-        break
+found = False
+while found == False:
+    vin = get_random_vin()
+
+    # get year
+    if vin[6].isdigit(): # check if vehicle is pre 2010
+        year = years_before_2010[vin[9]] 
+    else:
+        year = years_after_2010[vin[9]] 
+        
+    r = requests.get('https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/' + vin + '?format=json&modelyear=' + str(year))
+    json = r.json()
+    for r in json['Results']:
+        if r['VariableId'] == 143:
+            if r['Value'] == '0':
+                print ("VALID", vin)
+                found = True
+                break
 
 
 
