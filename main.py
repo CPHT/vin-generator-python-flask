@@ -7,16 +7,6 @@ import random
 import requests
 from include import *
 
-#print (v.region)
-#print (v.country)
-#print (v.make)
-#print (v.manufacturer)
-#print (v.vds)
-#print (v.vis)
-#print (v.vsn)
-#print (v.wmi)
-#print (v.year)
-
 def get_random_vin():
     first_8 = random.choice(list(vin_prefixes))
     first_10 = first_8 + 'A' + vin_prefixes[first_8] # 'A' is a temporary placeholder for the checksum char
