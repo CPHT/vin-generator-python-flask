@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Random VIN Generator</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+  <style>
+    .center-aligned {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .center-aligned-item {
+      max-width: 50%;
+    }
+
+    .center-aligned-item--top {
+      align-self: flex-start;
+    }
+
+    .center-aligned-item--bottom {
+      align-self: flex-end;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="center-aligned">
+  <div class="center-aligned-item center-aligned-item--top">
+    <h1>Random VIN Generator</h1>
+    <h2>{{ vin }}</h2>
+    <img src="/static/vin_qr_code.png" />
+    <hr>
+  </div>
+</div>
+
+</body>
+</html>
+

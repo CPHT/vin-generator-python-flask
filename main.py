@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from flask import Flask
+from flask import Flask, render_template
+import os
 import pyqrcode
 import random
 import requests
@@ -64,12 +65,9 @@ def go():
 
 
     qr_code = pyqrcode.create(vin)
-    qr_code.png('qr_code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xcc])
-    qr_code.show()
+    qr_code.png('static/vin_qr_code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xff])
     
     return vin
-
-
 
 
 
@@ -77,7 +75,19 @@ app = Flask(__name__)
 @app.route("/")
 def home():
     vin = go()
-    return vin
+    return render_template("index.html", vin=vin)
+
+@app.after_request
+def add_header(r):
+    """
+    Add headers to both force latest IE rendering engine or Chrome Frame,
+    and also to cache the rendered page for 10 minutes.
+    """
+    r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    r.headers["Pragma"] = "no-cache"
+    r.headers["Expires"] = "0"
+    r.headers['Cache-Control'] = 'public, max-age=0'
+    return r
 
 if __name__ == "__main__":
     app.run(debug=True)
