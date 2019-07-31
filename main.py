@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from flask import Flask
 import pyqrcode
 import random
 import requests
@@ -36,31 +37,48 @@ def get_check_digit(vin):
     else:
         return str(remainder)
 
+def go():
 
-found = False
-vin = None
-while found == False:
-    vin = get_random_vin()
+    found = False
+    vin = None
+    while found == False:
+        vin = get_random_vin()
 
-    # get year
-    if vin[6].isdigit(): # check if vehicle is pre 2010
-        year = years_before_2010[vin[9]] 
-    else:
-        year = years_after_2010[vin[9]] 
-        
-    # check if vin is valid
-    r = requests.get('https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/' + vin + '?format=json&modelyear=' + str(year))
-    json = r.json()
-    for r in json['Results']:
-        if found == False:
-            # check error code value
-            if r['VariableId'] == 143:
-                if r['Value'] == '0':
-                    print (vin)
-                    found = True
-                    break
+        # get year
+        if vin[6].isdigit(): # check if vehicle is pre 2010
+            year = years_before_2010[vin[9]] 
+        else:
+            year = years_after_2010[vin[9]] 
+            
+        # check if vin is valid
+        r = requests.get('https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/' + vin + '?format=json&modelyear=' + str(year))
+        json = r.json()
+        for r in json['Results']:
+            if found == False:
+                # check error code value
+                if r['VariableId'] == 143:
+                    if r['Value'] == '0':
+                        print (vin)
+                        found = True
+                        break
 
-qr_code = pyqrcode.create(vin)
-qr_code.png('qr_code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xcc])
-qr_code.show()
+
+    qr_code = pyqrcode.create(vin)
+    qr_code.png('qr_code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xcc])
+    qr_code.show()
+    
+    return vin
+
+
+
+
+
+app = Flask(__name__)
+@app.route("/")
+def home():
+    vin = go()
+    return vin
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
