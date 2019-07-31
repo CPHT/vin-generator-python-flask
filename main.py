@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from libvin.decoding import Vin
-from libvin.static import WMI_MAP
 import pyqrcode
 import random
 import requests
