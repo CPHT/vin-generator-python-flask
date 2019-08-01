@@ -57,6 +57,9 @@ def go():
             
         # check if vin is valid
         r = requests.get('https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/' + vin + '?format=json&modelyear=' + str(year))
+
+        #TODO break if request fails
+
         json = r.json()
         if found == False:
             for r in json['Results']:
@@ -106,9 +109,9 @@ def add_header(r):
     r.headers['Cache-Control'] = 'public, max-age=0'
     return r
 
-if __name__ == "__main__":
-    app.run(debug=True)
+#if __name__ == "__main__":
+#    app.run(debug=True)
 
-#def lambda_handler(event, context):
-#    return awsgi.response(app, event, context)
+def lambda_handler(event, context):
+    return awsgi.response(app, event, context)
 
