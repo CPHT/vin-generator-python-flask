@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import awsgi
 from flask import Flask, render_template
 import os
 import pyqrcode
@@ -85,14 +84,14 @@ def go():
 
 
     qr_code = pyqrcode.create(vin)
-    qr_code.png('static/vin_qr_code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xff])
+    qr_code.png('tmp/vin_qr_code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xff])
     
     return vehicle
 
 
 
-app = Flask(__name__)
-@app.route("/")
+app = Flask(__name__, static_folder="tmp")
+@app.route("/", methods = ['POST', 'GET'])
 def home():
     data = go()
     return render_template("index.html", data=data)
@@ -109,9 +108,6 @@ def add_header(r):
     r.headers['Cache-Control'] = 'public, max-age=0'
     return r
 
-#if __name__ == "__main__":
-#    app.run(debug=True)
-
-def lambda_handler(event, context):
-    return awsgi.response(app, event, context)
+if __name__ == "__main__":
+    app.run(debug=True)
 
