@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import awsgi
 from flask import Flask, render_template
 import os
 import pyqrcode
@@ -107,4 +108,7 @@ def add_header(r):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+#def lambda_handler(event, context):
+#    return awsgi.response(app, event, context)
 

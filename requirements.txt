@@ -1,0 +1,5 @@
+awsgi
+flask
+pypng
+pyqrcode
+requests
