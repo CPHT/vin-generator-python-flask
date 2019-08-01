@@ -34,7 +34,14 @@
   <div class="center-aligned-item center-aligned-item--top">
     <h1>Random VIN Generator</h1>
     <h2>{{ vin }}</h2>
+    <ul>
+      <li>{{data.vin}}</li>
+      <li>{{data.make}}</li>
+      <li>{{data.model}}</li>
+      <li>{{data.year}}</li>
+   </ul>
     <img src="/static/vin_qr_code.png" />
+    <a href="{{ url_for('home') }}"><button>REFRESH</button></a>
     <hr>
   </div>
 </div>

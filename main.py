@@ -38,11 +38,14 @@ def get_check_digit(vin):
     else:
         return str(remainder)
 
+vehicle = {'vin': None, 'make': None, 'manufacturer': None, 'model': None, 'year': None, 'series': None}
+
 def go():
 
     found = False
     vin = None
     while found == False:
+        vehicle.clear()
         vin = get_random_vin()
 
         # get year
@@ -54,28 +57,41 @@ def go():
         # check if vin is valid
         r = requests.get('https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/' + vin + '?format=json&modelyear=' + str(year))
         json = r.json()
-        for r in json['Results']:
-            if found == False:
-                # check error code value
-                if r['VariableId'] == 143:
-                    if r['Value'] == '0':
-                        print (vin)
-                        found = True
-                        break
+        if found == False:
+            for r in json['Results']:
+                    # check error code value
+                    if r['VariableId'] == 143:
+                        if r['Value'] == '0':
+                            vehicle['vin'] = vin
+                            found = True
+                        else:
+                            break
+
+                    # make
+                    if r['VariableId'] == 26:
+                        vehicle['make'] = r['Value'].title()
+
+                    # model
+                    if r['VariableId'] == 28:
+                        vehicle['model'] = r['Value'].title()
+
+                    # year
+                    if r['VariableId'] == 29:
+                        vehicle['year'] = r['Value']
 
 
     qr_code = pyqrcode.create(vin)
     qr_code.png('static/vin_qr_code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xff])
     
-    return vin
+    return vehicle
 
 
 
 app = Flask(__name__)
 @app.route("/")
 def home():
-    vin = go()
-    return render_template("index.html", vin=vin)
+    data = go()
+    return render_template("index.html", data=data)
 
 @app.after_request
 def add_header(r):
