@@ -74,11 +74,11 @@ def get_vehicle():
 
                         # make
                         if r['VariableId'] == 26:
-                            vehicle['make'] = r['Value'].title()
+                            vehicle['make'] = r['Value'].upper()
 
                         # model
                         if r['VariableId'] == 28:
-                            vehicle['model'] = r['Value'].title()
+                            vehicle['model'] = r['Value'].upper()
 
                         # year
                         if r['VariableId'] == 29:
