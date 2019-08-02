@@ -5,9 +5,11 @@ from flask import Flask, render_template
 import os
 import pyqrcode
 import random
+import re
 import requests
 from include import *
 
+vehicle = {'vin': None, 'make': None, 'manufacturer': None, 'model': None, 'year': None, 'series': None}
 
 def get_random_vin():
     first_8 = random.choice(list(vin_prefixes))
@@ -40,9 +42,8 @@ def get_check_digit(vin):
     else:
         return str(remainder)
 
-vehicle = {'vin': None, 'make': None, 'manufacturer': None, 'model': None, 'year': None, 'series': None}
 
-def go():
+def get_vehicle():
 
     found = False
     vin = None
@@ -57,46 +58,51 @@ def go():
             year = years_after_2010[vin[9]] 
             
         # check if vin is valid
-        r = requests.get('https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/' + vin + '?format=json&modelyear=' + str(year))
+        try:
+            r = requests.get('https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/' + vin + '?format=json&modelyear=' + str(year))
 
-        #TODO break if request fails
+            json = r.json()
+            if found == False:
+                for r in json['Results']:
+                        # check error code value
+                        if r['VariableId'] == 143:
+                            if r['Value'] == '0':
+                                vehicle['vin'] = vin
+                                found = True
+                            else:
+                                break
 
-        json = r.json()
-        if found == False:
-            for r in json['Results']:
-                    # check error code value
-                    if r['VariableId'] == 143:
-                        if r['Value'] == '0':
-                            vehicle['vin'] = vin
-                            found = True
-                        else:
-                            break
+                        # make
+                        if r['VariableId'] == 26:
+                            vehicle['make'] = r['Value'].title()
 
-                    # make
-                    if r['VariableId'] == 26:
-                        vehicle['make'] = r['Value'].title()
+                        # model
+                        if r['VariableId'] == 28:
+                            vehicle['model'] = r['Value'].title()
 
-                    # model
-                    if r['VariableId'] == 28:
-                        vehicle['model'] = r['Value'].title()
-
-                    # year
-                    if r['VariableId'] == 29:
-                        vehicle['year'] = r['Value']
+                        # year
+                        if r['VariableId'] == 29:
+                            vehicle['year'] = r['Value']
+        except Exception as e:
+            pass
 
 
+    # get qr code
     qr_code = pyqrcode.create(vin)
     qr_code.png('/tmp/vin_qr_code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xff])
+
+    # get image
+    r = requests.get('http://www.carimagery.com/api.asmx/GetImageUrl?searchTerm=' + vehicle['year'] + '+' + vehicle['make'].partition(' ')[0] + '+' + vehicle['model'].partition(' ')[0])
+    vehicle['image'] = re.sub('<[^<]+?>', '', r.text)
+    print (vehicle['image'])
     
     return vehicle
 
 
-
-#app = Flask(__name__)
 app = Flask(__name__, static_folder="/tmp")
 @app.route("/", methods = ['POST', 'GET'])
 def home():
-    data = go()
+    data = get_vehicle()
     s3 = boto3.client('s3')
     s3.upload_file('/tmp/vin_qr_code.png', 'random-vin-generator', 'static/vin_qr_code.png')
     return render_template("index.html", data=data)
