@@ -1,4 +1,5 @@
 awsgi
+boto3
 flask
 pypng
 pyqrcode

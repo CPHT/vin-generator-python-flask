@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+import boto3
 from flask import Flask, render_template
 import os
 import pyqrcode
 import random
 import requests
 from include import *
+
 
 def get_random_vin():
     first_8 = random.choice(list(vin_prefixes))
@@ -84,16 +86,19 @@ def go():
 
 
     qr_code = pyqrcode.create(vin)
-    qr_code.png('tmp/vin_qr_code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xff])
+    qr_code.png('/tmp/vin_qr_code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xff])
     
     return vehicle
 
 
 
-app = Flask(__name__, static_folder="tmp")
+#app = Flask(__name__)
+app = Flask(__name__, static_folder="/tmp")
 @app.route("/", methods = ['POST', 'GET'])
 def home():
     data = go()
+    s3 = boto3.client('s3')
+    s3.upload_file('/tmp/vin_qr_code.png', 'random-vin-generator', 'static/vin_qr_code.png')
     return render_template("index.html", data=data)
 
 @app.after_request
