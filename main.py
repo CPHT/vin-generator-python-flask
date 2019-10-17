@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import boto3
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import os
 import pyqrcode
 import random
@@ -11,7 +11,7 @@ from include import *
 
 vehicle = {'vin': None, 'make': None, 'manufacturer': None, 'model': None, 'year': None, 'series': None}
 
-def get_random_vin():
+def make_random_vin():
     first_8 = random.choice(list(vin_prefixes))
     first_10 = first_8 + 'A' + vin_prefixes[first_8] # 'A' is a temporary placeholder for the checksum char
     last_7 = ''.join([random.choice(base_vin_map) for n in range(7)])
@@ -20,6 +20,9 @@ def get_random_vin():
     vin = vin[:8] + get_check_digit(vin) + vin[9:] # replace checksum digit with valid value
     return vin
 
+def get_random_vin():
+    r = requests.get('http://randomvin.com/getvin.php?type=real')
+    return r.text
 
 def get_check_digit(vin):
     ii = 0
@@ -43,13 +46,18 @@ def get_check_digit(vin):
         return str(remainder)
 
 
-def get_vehicle():
+def get_vehicle(vin=None):
+    manual_entry = False
+
+    if vin != None:
+        manual_entry = True
 
     found = False
-    vin = None
     while found == False:
         vehicle.clear()
-        vin = get_random_vin()
+        if manual_entry == False:
+            vin = get_random_vin()
+            #vin = make_random_vin()
 
         # get year
         if vin[6].isdigit(): # check if vehicle is pre 2010
@@ -70,6 +78,8 @@ def get_vehicle():
                                 vehicle['vin'] = vin
                                 found = True
                             else:
+                                if manual_entry:
+                                    return 0
                                 break
 
                         # make
@@ -100,12 +110,21 @@ def get_vehicle():
 
 
 app = Flask(__name__, static_folder="/tmp")
-@app.route("/", methods = ['POST', 'GET'])
+@app.route("/")#, methods = ['POST', 'GET'])
 def home():
     data = get_vehicle()
     s3 = boto3.client('s3')
     s3.upload_file('/tmp/vin_qr_code.png', 'random-vin-generator', 'static/vin_qr_code.png')
     return render_template("index.html", data=data)
+
+@app.route("/", methods = ['POST'])
+def form_post():
+    vin = request.form['text']
+    if vin:
+        data = get_vehicle(vin)
+        if data:
+            return render_template("index.html", data=data)
+    return "Invalid VIN"
 
 @app.after_request
 def add_header(r):

@@ -4,74 +4,122 @@
   <title>Random VIN Generator</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
 </head>
-<body>
 
 <style>
-    .table th {
-        text-align: center;
+    body {
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
     }
 
-    .table {
-        border-radius: 5px;
-        width: 50%;
-        margin: 0px auto;
-        float: none;
+    .container-main {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     }
+
+    .container-header {
+        background-color: #eee
+    }
+
+    .container-image {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+    }
+
     .badge {
-      padding: 15px 15px 15px;
-      font-size: 40px;
-      white-space: nowrap;
-      color: #ffffff;
-      background-color: #294db1;
-      border-radius: 9px;
-      flex: 0 0 auto;
+        padding: 15px 15px 15px;
+        font-size: 40px;
+        white-space: nowrap;
+        color: #ffffff;
+        background-color: #294db1;
+        border-radius: 9px;
+        flex: 0 0 auto;
+        font-weight: 700px;
     }
-    a.list-group-item {
-      display: flex;
-      align-items: center;
-    }
-</style>
 
+    .button {
+        border: none;
+        color: white;
+        padding: 10px 16px;
+        text-color: white;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 14px;
+        border-radius: 6px;
+    }
+
+    a {
+        color: white;
+        text-decoration: none;
+    }
+
+    .green {
+        background-color: #4CAF50;
+    }
+
+    .blue {
+        background-color: #294db1;
+    }
+
+    input {
+        padding: 9px 12px;
+    }
+
+    h1 {
+        font-size: 50px;
+    }
+
+
+</style>
+<body>
 <main role="main">
 
-  <section class="jumbotron text-center">
-    <div class="container">
-      <h1 class="jumbotron-heading">VIN Generator</h1>
-      <p class="lead text-muted">Generate completely random Vehicle Identification Numbers that are valid and belong to a real car</p>
-      <p>
-        <a href="{{ url_for('home')}}" class="btn btn-primary my-2" style="background-color: #294db1">Generate</a>
-      </p>
+<div class="container-header">
+    <div class="container-main">
+        <h1>VIN Generator</h1>
+        <p>
+            <button class="button blue" type="submit"><a href="{{ url_for('home')}}">Generate</a></button>
+            <br>
+            <br>
+            <div class="span justify-content-center d-flex">
+                <form method="POST">
+                    <div class="input-group input-group-sm mb-3">
+                        <input type="text" name="text" minlength=17 maxlength=17 "form-control" placeholder="Manual Entry">
+                        <button class="button green" type="submit">Go</button>
+                    </div>
+                </form>
+            </div>
+        </p>
+        <br>
     </div>
-  </section>
-
-<div class="container h-100 d-flex justify-content-center text-center">
-        <div class="badge badge-pill badge-primary" >
-            <span style="text-align: center">{{data.year}}</span>
-            <span style="text-align: center">{{data.make}}</span>
-            <span style="text-align: center">{{data.model}}</span>
-        </div>
 </div>
 
-<div class="container text-center">
-  <h1 class="jumbotron-heading">{{data.vin}}</h1>
-	
-    <div class="paragraphs">
-      <div class="row">
-        <div class="span justify-content-center d-flex">
-          <img style="float:center; padding 50px; height: 300px" src="{{data.image}}">
-          <img style="float:center" src="{{url_for('static', filename='vin_qr_code.png')}}" />
-        
+<div class="container-main">
+    <p>
+        <div class="text-center">
+            <div class="badge">
+                <span style="text-align: center">{{data.year}}</span>
+                <span style="text-align: center">{{data.make}}</span>
+                <span style="text-align: center">{{data.model}}</span>
+            </div>
         </div>
-      </div>
-    </div>
+
+        <div class="text-center">
+            <h1>{{data.vin}}</h1>
+        </div> 
+
+        <div class="container-image">
+            <img style="float:center; padding 50px; height: 200px" src="{{data.image}}">
+            <img style="float:center" src="{{url_for('static', filename='vin_qr_code.png')}}">
+        </div>
+    </p>
+</div>
 
 </main>
-
-
 </body>
 </html>
 
