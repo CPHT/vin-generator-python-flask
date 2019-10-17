@@ -114,7 +114,7 @@ app = Flask(__name__, static_folder="/tmp")
 def home():
     data = get_vehicle()
     s3 = boto3.client('s3')
-    s3.upload_file('/tmp/vin_qr_code.png', 'random-vin-generator', 'static/vin_qr_code.png')
+    s3.upload_file('/tmp/vin_qr_code.png', 'vin-generator-python-flask', 'static/vin_qr_code.png')
     return render_template("index.html", data=data)
 
 @app.route("/", methods = ['POST'])
