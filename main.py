@@ -54,10 +54,10 @@ def get_vehicle(vin=None):
 
     found = False
     while found == False:
-        vehicle.clear()
+        #vehicle.clear()
         if manual_entry == False:
-            vin = get_random_vin()
-            #vin = make_random_vin()
+            #vin = get_random_vin()
+            vin = make_random_vin()
 
         # get year
         if vin[6].isdigit(): # check if vehicle is pre 2010
@@ -65,56 +65,60 @@ def get_vehicle(vin=None):
         else:
             year = years_after_2010[vin[9]] 
             
+        print("vin {}".format(vin))
+        found = True
         # check if vin is valid
-        try:
-            r = requests.get('https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/' + vin + '?format=json&modelyear=' + str(year))
+        #try:
+            #r = requests.get('https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/' + vin + '?format=json&modelyear=' + str(year))
 
-            json = r.json()
-            if found == False:
-                for r in json['Results']:
-                        # check error code value
-                        if r['VariableId'] == 143:
-                            if r['Value'] == '0':
-                                vehicle['vin'] = vin
-                                found = True
-                            else:
-                                if manual_entry:
-                                    return 0
-                                break
+            #json = r.json()
+            #if found == False:
+                #for r in json['Results']:
+                        ## check error code value
+                        #if r['VariableId'] == 143:
+                            #if r['Value'] == '0':
+                                #vehicle['vin'] = vin
+                                #found = True
+                            #else:
+                                #if manual_entry:
+                                    #return 0
+                                #break
 
                         # make
-                        if r['VariableId'] == 26:
-                            vehicle['make'] = r['Value'].upper()
+                        #if r['VariableId'] == 26:
+                            #vehicle['make'] = r['Value'].upper()
 
                         # model
-                        if r['VariableId'] == 28:
-                            vehicle['model'] = r['Value'].upper()
+                        #if r['VariableId'] == 28:
+                            #vehicle['model'] = r['Value'].upper()
 
                         # year
-                        if r['VariableId'] == 29:
-                            vehicle['year'] = r['Value']
-        except Exception as e:
-            pass
+                        #if r['VariableId'] == 29:
+                            #vehicle['year'] = r['Value']
+        #except Exception as e:
+            #pass
 
 
     # get qr code
     qr_code = pyqrcode.create(vin)
-    qr_code.png('/tmp/vin_qr_code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xff])
+    qr_code.png('tmp/vin_qr_code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xff])
+    #qr_code.png('/tmp/vin_qr_code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xff])
 
     # get image
-    r = requests.get('http://www.carimagery.com/api.asmx/GetImageUrl?searchTerm=' + vehicle['year'] + '+' + vehicle['make'].partition(' ')[0] + '+' + vehicle['model'].partition(' ')[0])
-    vehicle['image'] = re.sub('<[^<]+?>', '', r.text)
-    print (vehicle['image'])
+    #r = requests.get('http://www.carimagery.com/api.asmx/GetImageUrl?searchTerm=' + vehicle['year'] + '+' + vehicle['make'].partition(' ')[0] + '+' + vehicle['model'].partition(' ')[0])
+    #vehicle['image'] = re.sub('<[^<]+?>', '', r.text)
+    #print (vehicle['image'])
+    vehicle = {'vin': vin, 'make': None, 'manufacturer': None, 'model': None, 'year': None, 'series': None}
     
     return vehicle
 
 
-app = Flask(__name__, static_folder="/tmp")
+app = Flask(__name__, static_folder="tmp")
 @app.route("/")#, methods = ['POST', 'GET'])
 def home():
     data = get_vehicle()
-    s3 = boto3.client('s3')
-    s3.upload_file('/tmp/vin_qr_code.png', 'vin-generator-python-flask', 'static/vin_qr_code.png')
+    #s3 = boto3.client('s3')
+    #s3.upload_file('/tmp/vin_qr_code.png', 'vin-generator-python-flask', 'static/vin_qr_code.png')
     return render_template("index.html", data=data)
 
 @app.route("/", methods = ['POST'])
