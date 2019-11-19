@@ -52,49 +52,45 @@ def get_vehicle(vin=None):
     if vin != None:
         manual_entry = True
 
-    found = False
-    while found == False:
-        vehicle.clear()
-        if manual_entry == False:
-            vin = get_random_vin()
-            #vin = make_random_vin()
+    vehicle.clear()
+    if manual_entry == False:
+        vin = get_random_vin()
+        #vin = make_random_vin()
 
-        # get year
-        if vin[6].isdigit(): # check if vehicle is pre 2010
-            year = years_before_2010[vin[9]] 
-        else:
-            year = years_after_2010[vin[9]] 
-            
-        # check if vin is valid
-        try:
-            r = requests.get('https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/' + vin + '?format=json&modelyear=' + str(year))
+    # get year
+    if vin[6].isdigit(): # check if vehicle is pre 2010
+        year = years_before_2010[vin[9]] 
+    else:
+        year = years_after_2010[vin[9]] 
+        
+    # check if vin is valid
+    try:
+        r = requests.get('https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/' + vin + '?format=json&modelyear=' + str(year))
 
-            json = r.json()
-            if found == False:
-                for r in json['Results']:
-                        # check error code value
-                        if r['VariableId'] == 143:
-                            if r['Value'] == '0':
-                                vehicle['vin'] = vin
-                                found = True
-                            else:
-                                if manual_entry:
-                                    return 0
-                                break
+        json = r.json()
+        for r in json['Results']:
+                # check error code value
+                if r['VariableId'] == 143:
+                    if r['Value'] == '0':
+                        vehicle['vin'] = vin
+                        found = True
+                    else:
+                        if manual_entry:
+                            return 0
 
-                        # make
-                        if r['VariableId'] == 26:
-                            vehicle['make'] = r['Value'].upper()
+                # make
+                if r['VariableId'] == 26:
+                    vehicle['make'] = r['Value'].upper()
 
-                        # model
-                        if r['VariableId'] == 28:
-                            vehicle['model'] = r['Value'].upper()
+                # model
+                if r['VariableId'] == 28:
+                    vehicle['model'] = r['Value'].upper()
 
-                        # year
-                        if r['VariableId'] == 29:
-                            vehicle['year'] = r['Value']
-        except Exception as e:
-            pass
+                # year
+                if r['VariableId'] == 29:
+                    vehicle['year'] = r['Value']
+    except Exception as e:
+        pass
 
 
     # get qr code
